@@ -16,7 +16,7 @@ An admin mode is also available for viewing all tickets.
 ## 📦 Installation
 ```bash
 # clone the project
-git clone https://github.com/yourname/go-ticket-manager.git
+git clone https://github.com/Lunkan387/go-ticket-manager.git
 cd go-ticket-manager
 
 # run the server
