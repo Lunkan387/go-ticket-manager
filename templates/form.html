@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/form.css">
+    <title>Nouveau Ticket</title>
+</head>
+<body>
+    <h1>Créer un Ticket</h1>
+    <form action="/ticket" method="post">
+        <label for="title">Titre :</label><br>
+        <input type="text" id="title" name="title"><br><br>
+
+        <label for="description">Description :</label><br>
+        <textarea id="description" name="description"></textarea><br><br>
+
+        <button type="submit">Envoyer</button>
+    </form>
+</body>
+</html>

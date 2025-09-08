@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription</title>
+    <link rel="stylesheet" href="/static/register.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Créer un compte</h1>
+
+        <!-- Message d'erreur ou succès -->
+        {{ if .error }}
+        <p class="error">{{ .error }}</p>
+        {{ end }}
+        {{ if .success }}
+        <p class="success">{{ .success }}</p>
+        {{ end }}
+
+        <form action="/register" method="post">
+            <label for="username">Nom d'utilisateur :</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Mot de passe :</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">S'inscrire</button>
+        </form>
+
+        <p>Déjà un compte ? <a href="/login">Se connecter</a></p>
+    </div>
+</body>
+</html>

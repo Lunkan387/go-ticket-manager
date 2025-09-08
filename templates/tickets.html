@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes Tickets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f9fc;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #222;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #4a90e2;
+            color: white;
+            text-align: left;
+        }
+        tr:hover {
+            background: #f1f5ff;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+        }
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+        .empty {
+            margin-top: 20px;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Mes tickets</h1>
+    <p>Connecté en tant que <strong>{{ .user }}</strong></p>
+
+    {{ if .error }}
+        <p style="color:red;">{{ .error }}</p>
+    {{ end }}
+
+    {{ if .tickets }}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Priorité</th>
+                    <th>État</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .tickets }}
+                <tr>
+                    <td>{{ .ID }}</td>
+                    <td>{{ .Title }}</td>
+                    <td>{{ .Description }}</td>
+                    <td>{{ .Priority }}</td>
+                    <td>{{ .State }}</td>
+                    <td>{{ .CreatedAt.Format "02/01/2006 15:04" }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    {{ else }}
+        <p class="empty">Aucun ticket créé pour l’instant.</p>
+    {{ end }}
+
+    <br>
+    <a class="btn btn-primary" href="/ticket">➕ Créer un ticket</a>
+    <a class="btn btn-secondary" href="/form">⬅ Retour</a>
+</body>
+</html>
