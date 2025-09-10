@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Admin - Gestion</title>
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Panneau d'administration</h1>
+
+    <!-- Utilisateurs -->
+    <section>
+      <h2>Utilisateurs</h2>
+
+      <!-- Formulaire ajout utilisateur -->
+      <form action="/admin/user/add" method="post" class="form-inline">
+        <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+        <input type="password" name="password" placeholder="Mot de passe" required>
+        <button type="submit">Ajouter</button>
+      </form>
+
+      <!-- Tableau des utilisateurs -->
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .users}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Username}}</td>
+            <td>
+              <!-- Modifier utilisateur -->
+              <form action="/admin/user/edit/{{.ID}}" method="post" class="form-inline">
+                <input type="text" name="username" value="{{.Username}}" required>
+                <input type="password" name="password" placeholder="Nouveau mot de passe (optionnel)">
+                <button type="submit">Modifier</button>
+              </form>
+
+              <!-- Supprimer utilisateur -->
+              <form action="/admin/user/delete/{{.ID}}" method="post" class="form-inline">
+                <button type="submit" class="danger">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Tickets -->
+    <section>
+      <h2>Tickets</h2>
+
+      <!-- Formulaire ajout ticket -->
+      <form action="/admin/ticket/add" method="post" class="form-inline">
+        <input type="text" name="title" placeholder="Titre" required>
+        <input type="text" name="description" placeholder="Description" required>
+        <input type="text" name="user" placeholder="Utilisateur concerné" required>
+        <select name="priority">
+          <option value="low">Faible</option>
+          <option value="medium">Moyenne</option>
+          <option value="high">Haute</option>
+        </select>
+        <button type="submit">Ajouter</button>
+      </form>
+
+      <!-- Tableau des tickets -->
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Utilisateur</th>
+            <th>État</th>
+            <th>Priorité</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .tickets}}
+          <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Title}}</td>
+            <td>{{.User}}</td>
+            <td>{{.State}}</td>
+            <td>{{.Priority}}</td>
+            <td>
+              <!-- Modifier ticket -->
+              <form action="/admin/ticket/edit/{{.ID}}" method="post" class="form-inline">
+                <input type="text" name="title" value="{{.Title}}" required>
+                <input type="text" name="description" value="{{.Description}}" required>
+                <select name="priority">
+                  <option value="low" {{if eq .Priority "low"}}selected{{end}}>Faible</option>
+                  <option value="medium" {{if eq .Priority "medium"}}selected{{end}}>Moyenne</option>
+                  <option value="high" {{if eq .Priority "high"}}selected{{end}}>Haute</option>
+                </select>
+                <select name="state">
+                  <option value="open" {{if eq .State "open"}}selected{{end}}>Ouvert</option>
+                  <option value="closed" {{if eq .State "closed"}}selected{{end}}>Fermé</option>
+                </select>
+                <button type="submit">Modifier</button>
+              </form>
+
+              <!-- Supprimer ticket -->
+              <form action="/admin/ticket/delete/{{.ID}}" method="post" class="form-inline">
+                <button type="submit" class="danger">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

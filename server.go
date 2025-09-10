@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 	"sae/db"
-
+	"strconv"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -34,6 +34,120 @@ func main() {
 		}
 		c.Next()
 	}
+
+	adminRequired := func(c *gin.Context) {
+		sessions := sessions.Default(c)
+		user := sessions.Get("user")
+		if user == nil {
+			c.Redirect(http.StatusFound, "/")
+			c.Abort()
+			return
+		}
+
+		if user.(string) != "alexis" {
+			c.String(http.StatusForbidden, "t'es pas alexis fdp")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+
+	router.GET("/admin", authRequired, adminRequired, func(c *gin.Context) {
+		var users []db.User
+		var tickets []db.Ticket
+
+		database.Find(&users)
+		database.Find(&tickets)
+
+		c.HTML(http.StatusOK, "admin.html", gin.H{
+			"users":   users,
+			"tickets": tickets,
+		})
+	})
+
+	router.POST("/admin/user/add", authRequired, adminRequired, func(c *gin.Context) {
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+
+		user := db.User{
+			Username: username,
+			Password: db.HashPassword(password),
+		}
+		database.Create(&user)
+		c.Redirect(http.StatusFound, "/admin")
+	})
+
+	router.POST("/admin/user/edit/:id", authRequired, adminRequired, func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+
+		var user db.User
+		if err := database.First(&user, id).Error; err != nil {
+			c.String(http.StatusNotFound, "Utilisateur introuvable")
+			return
+		}
+
+		user.Username = username
+		if password != "" {
+			user.Password = db.HashPassword(password)
+		}
+
+		database.Save(&user)
+		c.Redirect(http.StatusFound, "/admin")
+	})
+
+	router.POST("/admin/user/delete/:id", authRequired, adminRequired, func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+		database.Delete(&db.User{}, id)
+		c.Redirect(http.StatusFound, "/admin")
+	})
+
+router.POST("/admin/ticket/add", authRequired, adminRequired, func(c *gin.Context) {
+    title := c.PostForm("title")
+    description := c.PostForm("description")
+    user := c.PostForm("user")
+    priority := c.PostForm("priority")
+
+    ticket := db.Ticket{
+        Title:       title,
+        Description: description,
+        User:        user,
+        State:       "open",
+        Priority:    priority,
+    }
+    database.Create(&ticket)
+    c.Redirect(http.StatusFound, "/admin")
+})
+
+	router.POST("/admin/ticket/edit/:id", authRequired, adminRequired, func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+		title := c.PostForm("title")
+		description := c.PostForm("description")
+		priority := c.PostForm("priority")
+		state := c.PostForm("state")
+
+		var ticket db.Ticket
+		if err := database.First(&ticket, id).Error; err != nil {
+			c.String(http.StatusNotFound, "Ticket introuvable")
+			return
+		}
+
+		ticket.Title = title
+		ticket.Description = description
+		ticket.Priority = priority
+		ticket.State = state
+
+		database.Save(&ticket)
+		c.Redirect(http.StatusFound, "/admin")
+	})
+
+	router.POST("/admin/ticket/delete/:id", authRequired, adminRequired, func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+		database.Delete(&db.Ticket{}, id)
+		c.Redirect(http.StatusFound, "/admin")
+	})
+
 
 	router.GET("/", func(c *gin.Context) {
 		success := c.Query("success")
