@@ -3,8 +3,9 @@ package main
 import (
 	"net/http"
 	"sae/db"
-	"time"
 	"strconv"
+	"time"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -104,22 +105,22 @@ func main() {
 		c.Redirect(http.StatusFound, "/admin")
 	})
 
-router.POST("/admin/ticket/add", authRequired, adminRequired, func(c *gin.Context) {
-    title := c.PostForm("title")
-    description := c.PostForm("description")
-    user := c.PostForm("user")
-    priority := c.PostForm("priority")
+	router.POST("/admin/ticket/add", authRequired, adminRequired, func(c *gin.Context) {
+		title := c.PostForm("title")
+		description := c.PostForm("description")
+		user := c.PostForm("user")
+		priority := c.PostForm("priority")
 
-    ticket := db.Ticket{
-        Title:       title,
-        Description: description,
-        User:        user,
-        State:       "open",
-        Priority:    priority,
-    }
-    database.Create(&ticket)
-    c.Redirect(http.StatusFound, "/admin")
-})
+		ticket := db.Ticket{
+			Title:       title,
+			Description: description,
+			User:        user,
+			State:       "open",
+			Priority:    priority,
+		}
+		database.Create(&ticket)
+		c.Redirect(http.StatusFound, "/admin")
+	})
 
 	router.POST("/admin/ticket/edit/:id", authRequired, adminRequired, func(c *gin.Context) {
 		id, _ := strconv.Atoi(c.Param("id"))
@@ -132,6 +133,23 @@ router.POST("/admin/ticket/add", authRequired, adminRequired, func(c *gin.Contex
 		if err := database.First(&ticket, id).Error; err != nil {
 			c.String(http.StatusNotFound, "Ticket introuvable")
 			return
+		}
+
+		session := sessions.Default(c)
+		currentUser := session.Get("user").(string)
+
+		// Historique
+		if ticket.Title != title {
+			db.LogTicketChange(database, ticket, currentUser, "Title", ticket.Title, title)
+		}
+		if ticket.Description != description {
+			db.LogTicketChange(database, ticket, currentUser, "Description", ticket.Description, description)
+		}
+		if ticket.Priority != priority {
+			db.LogTicketChange(database, ticket, currentUser, "Priority", ticket.Priority, priority)
+		}
+		if ticket.State != state {
+			db.LogTicketChange(database, ticket, currentUser, "State", ticket.State, state)
 		}
 
 		ticket.Title = title
@@ -155,6 +173,19 @@ router.POST("/admin/ticket/add", authRequired, adminRequired, func(c *gin.Contex
 		c.Redirect(http.StatusFound, "/admin")
 	})
 
+	router.GET("/ticket/history/:id", authRequired, func(c *gin.Context) {
+		ticketID, _ := strconv.Atoi(c.Param("id"))
+		var history []db.TicketHistory
+
+		if err := database.Where("ticket_id = ?", ticketID).Order("changed_at desc").Find(&history).Error; err != nil {
+			c.String(http.StatusInternalServerError, "Impossible de récupérer l'historique")
+			return
+		}
+
+		c.HTML(http.StatusOK, "ticket_history.html", gin.H{
+			"history": history,
+		})
+	})
 
 	router.GET("/", func(c *gin.Context) {
 		success := c.Query("success")
@@ -181,6 +212,7 @@ router.POST("/admin/ticket/add", authRequired, adminRequired, func(c *gin.Contex
 		user := db.User{
 			Username: username,
 			Password: db.HashPassword(password),
+			Role:     "Client",
 		}
 
 		if err := database.Create(&user).Error; err != nil {

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Historique du Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f9fc;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #222;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:hover {
+            background: #f1f5ff;
+        }
+        .empty {
+            margin-top: 20px;
+            font-style: italic;
+            color: #555;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: #ddd;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>📜 Historique du Ticket</h1>
+
+    {{ if .history }}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Utilisateur</th>
+                    <th>Champ modifié</th>
+                    <th>Ancienne valeur</th>
+                    <th>Nouvelle valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .history }}
+                <tr>
+                    <td>{{ .ChangedAt.Format "02/01/2006 15:04:05" }}</td>
+                    <td>{{ .User }}</td>
+                    <td>{{ .ChangedField }}</td>
+                    <td>{{ .OldValue }}</td>
+                    <td>{{ .NewValue }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    {{ else }}
+        <p class="empty">Aucune modification enregistrée pour ce ticket.</p>
+    {{ end }}
+
+    <br>
+    <a class="btn" href="/tickets">⬅ Retour aux tickets</a>
+</body>
+</html>

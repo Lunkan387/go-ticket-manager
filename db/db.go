@@ -14,7 +14,7 @@ type User struct {
 	gorm.Model
 	Username string `gorm:"unique"`
 	Password string
-	Role 	 string
+	Role     string
 }
 
 type Ticket struct {
@@ -27,12 +27,22 @@ type Ticket struct {
 	Priority    string
 }
 
+type TicketHistory struct {
+	gorm.Model
+	TicketID     uint
+	User         string
+	ChangedField string
+	OldValue     string
+	NewValue     string
+	ChangedAt    time.Time
+}
+
 func InitDB() (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open("tickets.db"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	db.AutoMigrate(&User{}, &Ticket{})
+	db.AutoMigrate(&User{}, &Ticket{}, &TicketHistory{})
 	return db, nil
 }
 
@@ -83,5 +93,20 @@ func TestDB() {
 		fmt.Println("✅ Mot de passe correct")
 	} else {
 		fmt.Println("❌ Mot de passe incorrect")
+	}
+}
+
+func LogTicketChange(db *gorm.DB, ticket Ticket, user string, field, oldValue, newValue string) {
+	history := TicketHistory{
+		TicketID:     ticket.ID,
+		User:         user,
+		ChangedField: field,
+		OldValue:     oldValue,
+		NewValue:     newValue,
+		ChangedAt:    time.Now(),
+	}
+
+	if err := db.Create(&history).Error; err != nil {
+		log.Println("Erreur lors de l'ajout dans l'historique :", err)
 	}
 }
