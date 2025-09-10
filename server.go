@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"sae/db"
+	"time"
 	"strconv"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -137,6 +138,12 @@ router.POST("/admin/ticket/add", authRequired, adminRequired, func(c *gin.Contex
 		ticket.Description = description
 		ticket.Priority = priority
 		ticket.State = state
+
+		if state == "closed" {
+			ticket.ClosedAt = time.Now()
+		} else {
+			ticket.ClosedAt = time.Time{}
+		}
 
 		database.Save(&ticket)
 		c.Redirect(http.StatusFound, "/admin")
