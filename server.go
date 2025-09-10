@@ -83,6 +83,7 @@ func main() {
 		id, _ := strconv.Atoi(c.Param("id"))
 		username := c.PostForm("username")
 		password := c.PostForm("password")
+		role := c.PostForm("role")
 
 		var user db.User
 		if err := database.First(&user, id).Error; err != nil {
@@ -91,6 +92,7 @@ func main() {
 		}
 
 		user.Username = username
+		user.Role = role
 		if password != "" {
 			user.Password = db.HashPassword(password)
 		}
@@ -175,12 +177,28 @@ func main() {
 
 	router.GET("/ticket/history/:id", authRequired, func(c *gin.Context) {
 		ticketID, _ := strconv.Atoi(c.Param("id"))
-		var history []db.TicketHistory
+		session := sessions.Default(c)
+		currentUser := session.Get("user").(string)
 
-		if err := database.Where("ticket_id = ?", ticketID).Order("changed_at desc").Find(&history).Error; err != nil {
-			c.String(http.StatusInternalServerError, "Impossible de récupérer l'historique")
+		var ticket db.Ticket
+		if err := database.First(&ticket, ticketID).Error; err != nil {
+			c.String(http.StatusNotFound, "Ticket introuvable")
 			return
 		}
+
+		var user db.User
+		if err := database.Where("username = ?", currentUser).First(&user).Error; err != nil {
+			c.String(http.StatusInternalServerError, "Utilisateur introuvable")
+			return
+		}
+
+		if user.Role != "admin" && ticket.User != currentUser {
+			c.String(http.StatusForbidden, "Vous n'avez pas le droit de voir cet historique")
+			return
+		}
+
+		var history []db.TicketHistory
+		database.Where("ticket_id = ?", ticketID).Order("changed_at desc").Find(&history)
 
 		c.HTML(http.StatusOK, "ticket_history.html", gin.H{
 			"history": history,
