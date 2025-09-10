@@ -38,15 +38,17 @@ func main() {
 	}
 
 	adminRequired := func(c *gin.Context) {
-		sessions := sessions.Default(c)
-		user := sessions.Get("user")
+		session := sessions.Default(c)
+		user := session.Get("user")
 		if user == nil {
 			c.Redirect(http.StatusFound, "/")
 			c.Abort()
 			return
 		}
 
-		if user.(string) != "alexis" {
+		roleInterface := session.Get("role")
+		role, ok := roleInterface.(string)
+		if !ok || role != "Admin" {
 			c.String(http.StatusForbidden, "t'es pas alexis fdp")
 			c.Abort()
 			return
@@ -140,7 +142,6 @@ func main() {
 		session := sessions.Default(c)
 		currentUser := session.Get("user").(string)
 
-		// Historique
 		if ticket.Title != title {
 			db.LogTicketChange(database, ticket, currentUser, "Title", ticket.Title, title)
 		}
@@ -264,6 +265,7 @@ func main() {
 
 		session := sessions.Default(c)
 		session.Set("user", user.Username)
+		session.Set("role", user.Role)
 		session.Set("token", db.HashPassword(user.Password))
 		session.Save()
 
