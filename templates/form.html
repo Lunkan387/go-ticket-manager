@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/form.css">
-    <title>Nouveau Ticket</title>
+  <meta charset="UTF-8">
+  <title>Nouveau Ticket</title>
+  <link rel="stylesheet" href="/static/form.css">
 </head>
 <body>
+  <div class="container">
     <h1>Créer un Ticket</h1>
-    <form action="/ticket" method="post">
-        <label for="title">Titre :</label><br>
-        <input type="text" id="title" name="title"><br><br>
 
-        <label for="description">Description :</label><br>
-        <textarea id="description" name="description"></textarea><br><br>
-
+    <section>
+      <h2>Nouveau Ticket</h2>
+      <form action="/ticket" method="post" class="form-inline">
+        <input type="text" id="title" name="title" placeholder="Titre" required>
+        <input type="text" id="description" name="description" placeholder="Description" required>
         <button type="submit">Envoyer</button>
-    </form>
+      </form>
+    </section>
+  </div>
 </body>
 </html>

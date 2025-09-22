@@ -1,81 +1,87 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+  font-family: Arial, sans-serif;
+  background: #1e293b;
+  color: #f1f5f9;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .container {
-    background-color: #fff;
-    padding: 30px 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    width: 350px;
-    text-align: center;
+  background: #0f172a;
+  padding: 30px 40px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  width: 350px;
+  text-align: center;
 }
 
 h1 {
-    margin-bottom: 20px;
-    color: #333;
+  margin-bottom: 20px;
+  color: #38bdf8;
 }
 
 form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 label {
-    text-align: left;
-    font-weight: bold;
-    color: #555;
+  text-align: left;
+  font-weight: bold;
+  color: #a5b4fc;
 }
 
 input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  background: #334155;
+  color: #f1f5f9;
 }
 
 button {
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  padding: 10px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 button:hover {
-    background-color: #0056b3;
+  opacity: 0.9;
 }
 
 p {
-    margin-top: 15px;
-    font-size: 14px;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #f1f5f9;
 }
 
 a {
-    color: #007bff;
-    text-decoration: none;
+  color: #38bdf8;
+  text-decoration: none;
 }
 
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .error {
-    color: red;
-    font-weight: bold;
+  color: #ef4444;
+  font-weight: bold;
 }
 
 .success {
-    color: green;
-    font-weight: bold;
+  color: #22c55e;
+  font-weight: bold;
 }
