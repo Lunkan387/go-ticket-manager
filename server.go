@@ -244,7 +244,7 @@ func main() {
 		c.Redirect(http.StatusFound, "/?success=1")
 	})
 
-	router.POST("/auth", func(c *gin.Context) {
+	router.POST("/login", func(c *gin.Context) {
 		username := c.PostForm("username")
 		password := c.PostForm("password")
 
