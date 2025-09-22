@@ -208,7 +208,7 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
 		success := c.Query("success")
-		c.HTML(http.StatusOK, "auth.html", gin.H{
+		c.HTML(http.StatusOK, "login.html", gin.H{
 			"success": success,
 		})
 	})
