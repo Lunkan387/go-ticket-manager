@@ -269,44 +269,19 @@ func main() {
 		session.Set("token", db.HashPassword(user.Password))
 		session.Save()
 
-		c.Redirect(http.StatusFound, "/form")
+		c.Redirect(http.StatusFound, "/home")
 	})
 
 	router.GET("/form", authRequired, func(c *gin.Context) {
 		c.HTML(http.StatusOK, "form.html", nil)
 	})
 
-	router.POST("/ticket", authRequired, func(c *gin.Context) {
-		title := c.PostForm("title")
-		description := c.PostForm("description")
-		priority := c.PostForm("priority")
-
-		session := sessions.Default(c)
-		username := session.Get("user").(string)
-
-		ticket := db.Ticket{
-			Title:       title,
-			Description: description,
-			User:        username,
-			State:       "open",
-			Priority:    priority,
-		}
-
-		if err := database.Create(&ticket).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "Erreur lors de la création du ticket",
-			})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"status": "✅ Ticket créé",
-			"id":     ticket.ID,
-		})
+	router.GET("/home", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "home.html", nil)
 	})
 
-	router.GET("/ticket", authRequired, func(c *gin.Context) {
-		c.HTML(http.StatusOK, "ticket.html", nil)
+	router.GET("/login", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.html", nil)
 	})
 
 	router.GET("/tickets", authRequired, func(c *gin.Context) {
