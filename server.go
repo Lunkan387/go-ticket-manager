@@ -276,6 +276,24 @@ func main() {
 		c.HTML(http.StatusOK, "form.html", nil)
 	})
 
+	router.POST("/form", authRequired, func(c *gin.Context) {
+		session := sessions.Default(c)
+		username := session.Get("user").(string)
+
+		title := c.PostForm("title")
+		description := c.PostForm("description")
+
+		ticket := db.Ticket{
+			Title:       title,
+			Description: description,
+			User:        username,
+			State:       "open",
+		}
+		
+		database.Create(&ticket)
+		c.Redirect(http.StatusFound, "/tickets")
+	})
+
 	router.GET("/home", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home.html", nil)
 	})
@@ -289,7 +307,6 @@ func main() {
 		session := sessions.Default(c)
 		username := session.Get("user").(string)
 
-		// récupérer uniquement les tickets de l'utilisateur connecté
 		if err := database.Where("user = ?", username).Find(&tickets).Error; err != nil {
 			c.HTML(http.StatusInternalServerError, "tickets.html", gin.H{
 				"error": "Impossible de récupérer les tickets",
@@ -308,5 +325,6 @@ func main() {
 		session.Save()
 		c.Redirect(http.StatusFound, "/")
 	})
+
 	router.RunTLS(":443", "cert.pem", "key.pem")
 }
