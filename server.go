@@ -289,7 +289,7 @@ func main() {
 			User:        username,
 			State:       "open",
 		}
-		
+
 		database.Create(&ticket)
 		c.Redirect(http.StatusFound, "/tickets")
 	})
@@ -317,6 +317,12 @@ func main() {
 		c.HTML(http.StatusOK, "tickets.html", gin.H{
 			"tickets": tickets,
 		})
+	})
+
+	router.POST("/tickets/delete/:id", authRequired, func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+		database.Delete(&db.Ticket{}, id)
+		c.Redirect(http.StatusFound, "/tickets")
 	})
 
 	router.GET("/logout", func(c *gin.Context) {

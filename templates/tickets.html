@@ -60,6 +60,7 @@
               <th>Priorité</th>
               <th>État</th>
               <th>Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -71,6 +72,11 @@
               <td>{{ .Priority }}</td>
               <td>{{ .State }}</td>
               <td>{{ .CreatedAt.Format "02/01/2006 15:04" }}</td>
+              <td>
+                <form action="/tickets/delete/{{ .ID }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce ticket ?');">
+                  <button type="submit" class="btn btn-danger btn-sm">🗑️ Supprimer</button>
+                </form>
+              </td>
             </tr>
             {{ end }}
           </tbody>
