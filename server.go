@@ -49,7 +49,26 @@ func main() {
 		roleInterface := session.Get("role")
 		role, ok := roleInterface.(string)
 		if !ok || role != "Admin" {
-			c.String(http.StatusForbidden, "t'es pas alexis fdp")
+			c.String(http.StatusForbidden, "User is not an admin")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+
+	supervisorRequired := func(c *gin.Context) {
+		session := sessions.Default(c)
+		user := session.Get("user")
+		if user == nil {
+			c.Redirect(http.StatusFound, "/")
+			c.Abort()
+			return
+		}
+		
+		roleInterface := session.Get("role")
+		role, ok := roleInterface.(string)
+		if !ok || role != "Supervisor" {
+			c.String(http.StatusForbidden, "User is not a supervisor")
 			c.Abort()
 			return
 		}
@@ -323,6 +342,21 @@ func main() {
 		id, _ := strconv.Atoi(c.Param("id"))
 		database.Delete(&db.Ticket{}, id)
 		c.Redirect(http.StatusFound, "/tickets")
+	})
+
+	router.GET("/supervisor", authRequired, supervisorRequired, func(c *gin.Context) {
+		var tickets []db.Ticket
+
+		if err := database.Find(&tickets).Error; err != nil {
+			c.HTML(http.StatusInternalServerError, "tickets.html", gin.H{
+			"error": "Impossible de récupérer les tickets",
+			})
+			return
+		}
+
+		c.HTML(http.StatusOK, "tickets.html", gin.H{
+			"tickets": tickets,
+		})
 	})
 
 	router.GET("/logout", func(c *gin.Context) {
