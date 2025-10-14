@@ -5,7 +5,7 @@ import (
 	"sae/db"
 	"strconv"
 	"time"
-
+	"sae/handle"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -16,15 +16,20 @@ func main() {
 	if err != nil {
 		panic("Impossible de se connecter à la DB")
 	}
-	database.AutoMigrate(&db.User{})
+	database.AutoMigrate(&db.User{}, &db.Ticket{})
 
 	router := gin.Default()
 
 	store := cookie.NewStore([]byte("dihosvsdvibvioboaifbvoidsbvb123123DSFQSCQ45"))
 	router.Use(sessions.Sessions("session", store))
-
+	router.SetTrustedProxies(nil)
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "./static")
+
+	router.Use(func(c *gin.Context) {
+		c.Set("db", database) // on met la connexion renvoyée par InitDB()
+		c.Next()
+	})
 
 	authRequired := func(c *gin.Context) {
 		session := sessions.Default(c)
@@ -365,6 +370,16 @@ func main() {
 		session.Save()
 		c.Redirect(http.StatusFound, "/")
 	})
+
+	router.GET("/stats", authRequired, adminRequired, handle.StatsPage)
+
+api := router.Group("/api/stats")
+{
+    api.GET("/summary", handle.StatsSummary)
+    api.GET("/time", handle.StatsTimeSeries)
+    api.GET("/by-user", handle.StatsByUser)
+}
+
 
 	router.RunTLS(":443", "cert.pem", "key.pem")
 }
