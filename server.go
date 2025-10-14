@@ -61,7 +61,7 @@ func main() {
 		c.Next()
 	}
 
-	supervisorRequired := func(c *gin.Context) {
+	supervisororadminRequired := func(c *gin.Context) {
 		session := sessions.Default(c)
 		user := session.Get("user")
 		if user == nil {
@@ -69,14 +69,14 @@ func main() {
 			c.Abort()
 			return
 		}
-		
+
 		roleInterface := session.Get("role")
 		role, ok := roleInterface.(string)
-		if !ok || role != "Supervisor" {
-			c.String(http.StatusForbidden, "User is not a supervisor")
+		if !ok || (role != "Supervisor" && role != "Admin") {
+			c.String(http.StatusForbidden, "User is not a supervisor or an admin")
 			c.Abort()
 			return
-		}
+		} 
 		c.Next()
 	}
 
@@ -96,10 +96,12 @@ func main() {
 	router.POST("/admin/user/add", authRequired, adminRequired, func(c *gin.Context) {
 		username := c.PostForm("username")
 		password := c.PostForm("password")
+		role := c.PostForm("role")
 
 		user := db.User{
 			Username: username,
 			Password: db.HashPassword(password),
+			Role:     role,
 		}
 		database.Create(&user)
 		c.Redirect(http.StatusFound, "/admin")
@@ -349,7 +351,7 @@ func main() {
 		c.Redirect(http.StatusFound, "/tickets")
 	})
 
-	router.GET("/supervisor", authRequired, supervisorRequired, func(c *gin.Context) {
+	router.GET("/supervisor", authRequired, supervisororadminRequired, func(c *gin.Context) {
 		var tickets []db.Ticket
 
 		if err := database.Find(&tickets).Error; err != nil {
