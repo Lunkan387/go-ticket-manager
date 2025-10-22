@@ -363,17 +363,50 @@ func main() {
 
 		c.HTML(http.StatusOK, "tickets.html", gin.H{
 			"tickets": tickets,
+			"isSupervisor":  true,
 		})
 	})
 
-	router.GET("/logout", func(c *gin.Context) {
-		session := sessions.Default(c)
-		session.Clear()
-		session.Save()
-		c.Redirect(http.StatusFound, "/")
-	})
+router.POST("/supervisor/ticket/:id/priority", authRequired, supervisororadminRequired, func(c *gin.Context) {
+    id, _ := strconv.Atoi(c.Param("id"))
+    newPriority := c.PostForm("priority")
 
-	router.GET("/stats", authRequired, adminRequired, handle.StatsPage)
+    // Valider les valeurs autorisées
+    allowed := map[string]bool{"low": true, "medium": true, "high": true, "urgent": true}
+    if !allowed[newPriority] {
+        c.String(http.StatusBadRequest, "Priorité invalide")
+        return
+    }
+
+    var ticket db.Ticket
+    if err := database.First(&ticket, id).Error; err != nil {
+        c.String(http.StatusNotFound, "Ticket introuvable")
+        return
+    }
+
+    // Historique si la priorité change
+    if ticket.Priority != newPriority {
+        session := sessions.Default(c)
+        currentUser, _ := session.Get("user").(string)
+        db.LogTicketChange(database, ticket, currentUser, "Priority", ticket.Priority, newPriority)
+    }
+
+    ticket.Priority = newPriority
+    database.Save(&ticket)
+
+    // Revenir à la supervision
+    c.Redirect(http.StatusFound, "/supervisor")
+})
+
+
+router.GET("/logout", func(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+	c.Redirect(http.StatusFound, "/")
+})
+
+router.GET("/stats", authRequired, adminRequired, handle.StatsPage)
 
 api := router.Group("/api/stats")
 {
