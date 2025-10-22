@@ -1,0 +1,86 @@
+@startuml
+title Système de gestion de tickets d’incidents - Cas d'utilisation
+
+top to bottom direction
+left to right direction
+
+skinparam actorMargin 10
+skinparam usecasePadding 50
+skinparam rectanglePadding 50
+
+actor "Rapporteur" as Reporter_R
+actor "Client" as Client_C
+actor "Administrateur" as Admin_A
+
+rectangle Application {
+
+  rectangle "Permissions Client" as Client {
+    usecase "S'authentifier\n(se connecter / se déconnecter)" as UC_Auth_C
+    usecase "Créer un ticket" as UC_CreateTicket_C
+    usecase "Consulter mes tickets" as UC_ListOwn_C
+    usecase "Fermer un ticket" as UC_Close_C
+  }
+
+  rectangle "Permissions Rapporteur" as Rapporteur {
+    usecase "S'authentifier\n(se connecter / se déconnecter)" as UC_Auth_R
+    usecase "Créer un ticket" as UC_CreateTicket_R
+    usecase "Consulter mes tickets" as UC_ListOwn_R
+    usecase "Voir un ticket\n(détails, historique)" as UC_View_R
+    usecase "Voir tous les tickets\n(détails, historique)" as UC_View_All_R
+    usecase "Modifier l'état\n(ou priorité)" as UC_ChangeState_R
+    usecase "Fermer un ticket" as UC_Close_R
+    usecase "Supprimer un ticket" as UC_Delete_R
+  }
+
+  rectangle "Permissions Administrateur" as Administrateur {
+    usecase "S'authentifier\n(se connecter / se déconnecter)" as UC_Auth_A
+    usecase "Créer un ticket" as UC_CreateTicket_A
+    usecase "Consulter mes tickets" as UC_ListOwn_A
+    usecase "Voir un ticket\n(détails, historique)" as UC_View_A
+    usecase "Voir tous les tickets\n(détails, historique)" as UC_View_All_A
+    usecase "Modifier l'état\n(ou priorité)" as UC_ChangeState_A
+    usecase "Prendre/Assigner un ticket" as UC_Assign_A
+    usecase "Fermer un ticket" as UC_Close_A
+    usecase "Supprimer un ticket" as UC_Delete_A
+    usecase "Gérer les utilisateurs" as UC_Users_A
+    usecase "Gérer les clients" as UC_Clients_A
+    usecase "Gérer les projets" as UC_Projects_A
+    usecase "Gérer les commits" as UC_Commits_A
+    usecase "Consulter les statistiques" as UC_Stats_A
+  }
+
+}
+
+Client --[hidden]> Rapporteur
+Rapporteur --[hidden]> Administrateur
+
+Reporter_R --> UC_Auth_R
+Reporter_R --> UC_CreateTicket_R
+Reporter_R --> UC_ListOwn_R
+Reporter_R --> UC_View_R
+Reporter_R --> UC_View_All_R
+Reporter_R --> UC_ChangeState_R
+Reporter_R --> UC_Close_R
+Reporter_R --> UC_Delete_R
+
+Client_C --> UC_Auth_C
+Client_C --> UC_CreateTicket_C
+Client_C --> UC_ListOwn_C
+Client_C --> UC_Close_C
+
+Admin_A --> UC_Auth_A
+Admin_A --> UC_CreateTicket_A
+Admin_A --> UC_ListOwn_A
+Admin_A --> UC_View_A
+Admin_A --> UC_View_All_A
+Admin_A --> UC_ChangeState_A
+Admin_A --> UC_Assign_A
+Admin_A --> UC_Close_A
+Admin_A --> UC_Delete_A
+Admin_A --> UC_Users_A
+Admin_A --> UC_Clients_A
+Admin_A --> UC_Projects_A
+Admin_A --> UC_Commits_A
+Admin_A --> UC_Stats_A
+
+@enduml

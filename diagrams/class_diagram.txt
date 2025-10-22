@@ -1,0 +1,93 @@
+@startuml
+title Diagramme de classes - Gestion de tickets
+class User {
+  +id: int
+  +name: string
+  +email: string
+  +password_hash: string
+  +role: string
+  +active: bool
+  +created_at: time
+  +updated_at: time
+}
+class Client {
+  +id: int
+  +name: string
+  +code: string
+  +contact_name: string
+  +contact_email: string
+  +contact_phone: string
+  +created_at: time
+  +updated_at: time
+}
+class Project {
+  +id: int
+  +name: string
+  +code: string
+  +description: string
+  +client_id: int
+  +created_at: time
+  +updated_at: time
+}
+class Ticket {
+  +id: int
+  +title: string
+  +description: string
+  +priority: Priority
+  +status: Status
+  +reporter_id: int
+  +assignee_id: int
+  +client_id: int
+  +project_id: int
+  +created_at: time
+  +updated_at: time
+  +closed_at: time
+}
+enum Priority {
+  Low
+  Medium
+  High
+  Critical
+}
+enum Status {
+  Open
+  InProgress
+  Resolved
+  Closed
+  Reopened
+}
+class Comment {
+  +id: int
+  +ticket_id: int
+  +author_id: int
+  +body: string
+  +created_at: time
+}
+class Attachment {
+  +id: int
+  +ticket_id: int
+  +filename: string
+  +path: string
+  +mime_type: string
+  +size: int
+  +uploaded_by: int
+  +created_at: time
+}
+class TicketHistory {
+  +id: int
+  +ticket_id: int
+  +author_id: int
+  +field: string
+  +old_value: string
+  +new_value: string
+  +created_at: time
+}
+
+Client "1" -- "*" Project
+Project "1" -- "*" Ticket
+User "1" -- "*" Ticket : reporter
+User "1" -- "*" Ticket : assignee
+Ticket "1" -- "*" Comment
+Ticket "1" -- "*" Attachment
+Ticket "1" -- "*" TicketHistory
+@enduml

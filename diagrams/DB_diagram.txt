@@ -1,0 +1,34 @@
+erDiagram
+  users {
+    INTEGER  id
+    datetime created_at
+    datetime updated_at
+    datetime deleted_at
+    TEXT username
+    TEXT password
+    TEXT role
+  }
+  tickets {
+    INTEGER  id
+    datetime created_at
+    datetime updated_at
+    datetime deleted_at
+    TEXT title
+    TEXT description
+    TEXT user
+    TEXT state
+    datetime closed_at
+    TEXT priority
+  }
+  ticket_histories {
+    INTEGER  id
+    datetime created_at
+    datetime updated_at
+    datetime deleted_at
+    INTEGER ticket_id
+    TEXT user
+    TEXT changed_field
+    TEXT old_value
+    TEXT new_value
+    datetime changed_at
+  }
