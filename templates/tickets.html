@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mes Tickets</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     html, body { height: 100%; }
     body { display: flex; flex-direction: column; }
     main { flex: 1; }
+    .table td, .table th { vertical-align: middle; }
   </style>
 </head>
 <body class="bg-light">
@@ -19,17 +21,31 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
+
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="/home">Accueil</a></li>
           <li class="nav-item"><a class="nav-link" href="/register">S'inscrire</a></li>
           <li class="nav-item"><a class="nav-link" href="/form">Form</a></li>
+
+          <!-- Tickets actif uniquement quand NON superviseur -->
           <li class="nav-item">
-            <a class="nav-link {{if not .isSupervisor}}active{{end}}" href="/tickets">Tickets</a>
+            {{ if .isSupervisor }}
+              <a class="nav-link" href="/tickets">Tickets</a>
+            {{ else }}
+              <a class="nav-link active" href="/tickets">Tickets</a>
+            {{ end }}
           </li>
+
+          <!-- Supervision actif uniquement quand superviseur -->
           <li class="nav-item">
-            <a class="nav-link {{if .isSupervisor}}active{{end}}" href="/supervisor">Supervision</a>
+            {{ if .isSupervisor }}
+              <a class="nav-link active" href="/supervisor">Supervision</a>
+            {{ else }}
+              <a class="nav-link" href="/supervisor">Supervision</a>
+            {{ end }}
           </li>
+
           <li class="nav-item"><a class="nav-link" href="/admin">Administration</a></li>
           <li class="nav-item"><a class="nav-link" href="/stats">Statistiques</a></li>
           <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/logout">Logout</a></li>
@@ -42,10 +58,10 @@
   <main>
     <div class="container my-5">
       <h1 class="text-center mb-3">📋 Mes tickets</h1>
-      {{if .user}}<p class="text-center">Connecté en tant que <strong>{{ .user }}</strong></p>{{end}}
+      {{ if .user }}<p class="text-center">Connecté en tant que <strong>{{ .user }}</strong></p>{{ end }}
 
       {{ if .error }}
-      <div class="alert alert-danger text-center">{{ .error }}</div>
+        <div class="alert alert-danger text-center">{{ .error }}</div>
       {{ end }}
 
       {{ if .tickets }}
@@ -58,7 +74,9 @@
               <th>Description</th>
               <th>Priorité</th>
               <th>État</th>
-              <th>Date</th>
+              <th>Créé le</th>
+              <th>Mis à jour</th>
+              <th>Propriétaire</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -74,10 +92,10 @@
                 {{ if $.isSupervisor }}
                   <form method="post" action="/supervisor/ticket/{{ .ID }}/priority" class="d-flex gap-2 align-items-center">
                     <select name="priority" class="form-select form-select-sm" style="max-width: 10rem">
-                      <option value="low"    {{if eq .Priority "low"}}selected{{end}}>low</option>
-                      <option value="medium" {{if eq .Priority "medium"}}selected{{end}}>medium</option>
-                      <option value="high"   {{if eq .Priority "high"}}selected{{end}}>high</option>
-                      <option value="urgent" {{if eq .Priority "urgent"}}selected{{end}}>urgent</option>
+                      <option value="low"    {{ if eq .Priority "low" }}selected{{ end }}>low</option>
+                      <option value="medium" {{ if eq .Priority "medium" }}selected{{ end }}>medium</option>
+                      <option value="high"   {{ if eq .Priority "high" }}selected{{ end }}>high</option>
+                      <option value="urgent" {{ if eq .Priority "urgent" }}selected{{ end }}>urgent</option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm">Mettre à jour</button>
                   </form>
@@ -86,8 +104,36 @@
                 {{ end }}
               </td>
 
-              <td>{{ .State }}</td>
+              <!-- État (éditable pour Supervisor/Admin) -->
+              <td>
+                {{ if $.isSupervisor }}
+                  <form method="post" action="/supervisor/ticket/{{ .ID }}/state" class="d-flex gap-2 align-items-center">
+                    <select name="state" class="form-select form-select-sm" style="max-width: 11rem">
+                      <option value="open"        {{ if eq .State "open" }}selected{{ end }}>open</option>
+                      <option value="in_progress" {{ if eq .State "in_progress" }}selected{{ end }}>in_progress</option>
+                      <option value="closed"      {{ if eq .State "closed" }}selected{{ end }}>closed</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Mettre à jour</button>
+                  </form>
+                {{ else }}
+                  {{ .State }}
+                {{ end }}
+              </td>
+
+              <!-- Dates -->
               <td>{{ .CreatedAt.Format "02/01/2006 15:04" }}</td>
+              <td>{{ .UpdatedAt.Format "02/01/2006 15:04" }}</td>
+
+              <!-- Propriétaire (.User du modèle) -->
+              <td>
+                {{ if .User }}
+                  {{ .User }}
+                {{ else }}
+                  —
+                {{ end }}
+              </td>
+
+              <!-- Actions -->
               <td>
                 <form action="/tickets/delete/{{ .ID }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce ticket ?');">
                   <button type="submit" class="btn btn-danger btn-sm">🗑️ Supprimer</button>
@@ -99,7 +145,7 @@
         </table>
       </div>
       {{ else }}
-      <p class="text-center fst-italic text-secondary mt-3">Aucun ticket créé pour l’instant.</p>
+        <p class="text-center fst-italic text-secondary mt-3">Aucun ticket créé pour l’instant.</p>
       {{ end }}
 
       <div class="text-center mt-4">

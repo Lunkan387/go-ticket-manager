@@ -1,10 +1,10 @@
 package main
 
 import (
+	"time"
 	"net/http"
 	"sae/db"
 	"strconv"
-	"time"
 	"sae/handle"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -351,52 +351,117 @@ func main() {
 		c.Redirect(http.StatusFound, "/tickets")
 	})
 
-	router.GET("/supervisor", authRequired, supervisororadminRequired, func(c *gin.Context) {
-		var tickets []db.Ticket
+// Groupe supervisor
+// Groupe Supervisor
+grp := router.Group("/supervisor", authRequired, supervisororadminRequired)
+{
+    // Page liste des tickets (adapte le rendu si ton template/handle diffère)
+    grp.GET("", func(c *gin.Context) {
+        var tickets []db.Ticket
+        if err := database.Find(&tickets).Error; err != nil {
+            c.String(http.StatusInternalServerError, "Erreur chargement tickets")
+            return
+        }
+        c.HTML(http.StatusOK, "tickets.html", gin.H{
+            "tickets":      tickets,
+            "isSupervisor": true,
+        })
+    })
 
-		if err := database.Find(&tickets).Error; err != nil {
-			c.HTML(http.StatusInternalServerError, "tickets.html", gin.H{
-			"error": "Impossible de récupérer les tickets",
-			})
-			return
-		}
+    // Endpoint historique (si tu veux le garder)
+    grp.POST("/ticket/update", func(c *gin.Context) {
+        id, err := strconv.Atoi(c.PostForm("id"))
+        if err != nil { c.String(http.StatusBadRequest, "ID invalide"); return }
 
-		c.HTML(http.StatusOK, "tickets.html", gin.H{
-			"tickets": tickets,
-			"isSupervisor":  true,
-		})
-	})
+        var ticket db.Ticket
+        if err := database.First(&ticket, id).Error; err != nil {
+            c.String(http.StatusNotFound, "Ticket introuvable"); return
+        }
 
-router.POST("/supervisor/ticket/:id/priority", authRequired, supervisororadminRequired, func(c *gin.Context) {
-    id, _ := strconv.Atoi(c.Param("id"))
-    newPriority := c.PostForm("priority")
+        if v := c.PostForm("state"); v != "" {
+            allowed := map[string]bool{"open": true, "in_progress": true, "closed": true}
+            if !allowed[v] { c.String(http.StatusBadRequest, "État invalide"); return }
+            if ticket.State != v {
+                session := sessions.Default(c)
+                currentUser, _ := session.Get("user").(string)
+                db.LogTicketChange(database, ticket, currentUser, "State", ticket.State, v)
+            }
+            ticket.State = v
+        }
 
-    // Valider les valeurs autorisées
-    allowed := map[string]bool{"low": true, "medium": true, "high": true, "urgent": true}
-    if !allowed[newPriority] {
-        c.String(http.StatusBadRequest, "Priorité invalide")
-        return
-    }
+        if v := c.PostForm("priority"); v != "" {
+            allowed := map[string]bool{"low": true, "medium": true, "high": true, "urgent": true}
+            if !allowed[v] { c.String(http.StatusBadRequest, "Priorité invalide"); return }
+            if ticket.Priority != v {
+                session := sessions.Default(c)
+                currentUser, _ := session.Get("user").(string)
+                db.LogTicketChange(database, ticket, currentUser, "Priority", ticket.Priority, v)
+            }
+            ticket.Priority = v
+        }
 
-    var ticket db.Ticket
-    if err := database.First(&ticket, id).Error; err != nil {
-        c.String(http.StatusNotFound, "Ticket introuvable")
-        return
-    }
+        if err := database.Save(&ticket).Error; err != nil {
+            c.String(http.StatusInternalServerError, "Échec mise à jour"); return
+        }
+        c.Redirect(http.StatusSeeOther, "/supervisor")
+    })
 
-    // Historique si la priorité change
-    if ticket.Priority != newPriority {
-        session := sessions.Default(c)
-        currentUser, _ := session.Get("user").(string)
-        db.LogTicketChange(database, ticket, currentUser, "Priority", ticket.Priority, newPriority)
-    }
+    // Nouveau: POST /supervisor/ticket/:id/state
+    grp.POST("/ticket/:id/state", func(c *gin.Context) {
+        id, err := strconv.Atoi(c.Param("id"))
+        if err != nil { c.String(http.StatusBadRequest, "ID invalide"); return }
 
-    ticket.Priority = newPriority
-    database.Save(&ticket)
+        var ticket db.Ticket
+        if err := database.First(&ticket, id).Error; err != nil {
+            c.String(http.StatusNotFound, "Ticket introuvable"); return
+        }
 
-    // Revenir à la supervision
-    c.Redirect(http.StatusFound, "/supervisor")
-})
+        v := c.PostForm("state")
+        allowed := map[string]bool{"open": true, "in_progress": true, "closed": true}
+        if !allowed[v] { c.String(http.StatusBadRequest, "État invalide"); return }
+
+        if ticket.State != v {
+            session := sessions.Default(c)
+            currentUser, _ := session.Get("user").(string)
+            db.LogTicketChange(database, ticket, currentUser, "State", ticket.State, v)
+        }
+        ticket.State = v
+
+        if err := database.Save(&ticket).Error; err != nil {
+            c.String(http.StatusInternalServerError, "Échec mise à jour"); return
+        }
+        c.Redirect(http.StatusSeeOther, "/supervisor")
+    })
+
+    // Nouveau: POST /supervisor/ticket/:id/priority
+    grp.POST("/ticket/:id/priority", func(c *gin.Context) {
+        id, err := strconv.Atoi(c.Param("id"))
+        if err != nil { c.String(http.StatusBadRequest, "ID invalide"); return }
+
+        var ticket db.Ticket
+        if err := database.First(&ticket, id).Error; err != nil {
+            c.String(http.StatusNotFound, "Ticket introuvable"); return
+        }
+
+        v := c.PostForm("priority")
+        allowed := map[string]bool{"low": true, "medium": true, "high": true, "urgent": true}
+        if !allowed[v] { c.String(http.StatusBadRequest, "Priorité invalide"); return }
+
+        if ticket.Priority != v {
+            session := sessions.Default(c)
+            currentUser, _ := session.Get("user").(string)
+            db.LogTicketChange(database, ticket, currentUser, "Priority", ticket.Priority, v)
+        }
+        ticket.Priority = v
+
+        if err := database.Save(&ticket).Error; err != nil {
+            c.String(http.StatusInternalServerError, "Échec mise à jour"); return
+        }
+        c.Redirect(http.StatusSeeOther, "/supervisor")
+    })
+}
+
+
 
 
 router.GET("/logout", func(c *gin.Context) {
