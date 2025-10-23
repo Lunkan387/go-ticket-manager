@@ -165,11 +165,12 @@
                         <option value="low" {{if eq .Priority "low"}}selected{{end}}>low</option>
                         <option value="medium" {{if eq .Priority "medium"}}selected{{end}}>medium</option>
                         <option value="high" {{if eq .Priority "high"}}selected{{end}}>high</option>
-                        <option value="high" {{if eq .Priority "high"}}selected{{end}}>urgent</option>
+                        <option value="urgent" {{if eq .Priority "urgent"}}selected{{end}}>urgent</option>
                       </select>
                       <select name="state" class="form-select">
-                        <option value="open" {{if eq .State "open"}}selected{{end}}>Ouvert</option>
-                        <option value="closed" {{if eq .State "closed"}}selected{{end}}>Fermé</option>
+                        <option value="open" {{if eq .State "open"}}selected{{end}}>open</option>
+                        <option value="closed" {{if eq .State "closed"}}selected{{end}}>closed</option>
+                        <option value="in_progress" {{if eq .State "in_progress"}}selected{{end}}>in_progress</option>
                       </select>
                       <button type="submit" class="btn btn-warning">Modifier</button>
                     </form>
