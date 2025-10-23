@@ -162,9 +162,10 @@
                       <input type="text" class="form-control" name="title" value="{{.Title}}" required>
                       <input type="text" class="form-control" name="description" value="{{.Description}}" required>
                       <select name="priority" class="form-select">
-                        <option value="low" {{if eq .Priority "low"}}selected{{end}}>Faible</option>
-                        <option value="medium" {{if eq .Priority "medium"}}selected{{end}}>Moyenne</option>
-                        <option value="high" {{if eq .Priority "high"}}selected{{end}}>Haute</option>
+                        <option value="low" {{if eq .Priority "low"}}selected{{end}}>low</option>
+                        <option value="medium" {{if eq .Priority "medium"}}selected{{end}}>medium</option>
+                        <option value="high" {{if eq .Priority "high"}}selected{{end}}>high</option>
+                        <option value="high" {{if eq .Priority "high"}}selected{{end}}>urgent</option>
                       </select>
                       <select name="state" class="form-select">
                         <option value="open" {{if eq .State "open"}}selected{{end}}>Ouvert</option>
