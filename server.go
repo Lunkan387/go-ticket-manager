@@ -27,7 +27,7 @@ func main() {
 	router.Static("/static", "./static")
 
 	router.Use(func(c *gin.Context) {
-		c.Set("db", database) // on met la connexion renvoyée par InitDB()
+		c.Set("db", database) 
 		c.Next()
 	})
 
@@ -351,11 +351,8 @@ func main() {
 		c.Redirect(http.StatusFound, "/tickets")
 	})
 
-// Groupe supervisor
-// Groupe Supervisor
 grp := router.Group("/supervisor", authRequired, supervisororadminRequired)
 {
-    // Page liste des tickets (adapte le rendu si ton template/handle diffère)
     grp.GET("", func(c *gin.Context) {
         var tickets []db.Ticket
         if err := database.Find(&tickets).Error; err != nil {
@@ -368,7 +365,6 @@ grp := router.Group("/supervisor", authRequired, supervisororadminRequired)
         })
     })
 
-    // Endpoint historique (si tu veux le garder)
     grp.POST("/ticket/update", func(c *gin.Context) {
         id, err := strconv.Atoi(c.PostForm("id"))
         if err != nil { c.String(http.StatusBadRequest, "ID invalide"); return }
@@ -406,7 +402,6 @@ grp := router.Group("/supervisor", authRequired, supervisororadminRequired)
         c.Redirect(http.StatusSeeOther, "/supervisor")
     })
 
-    // Nouveau: POST /supervisor/ticket/:id/state
     grp.POST("/ticket/:id/state", func(c *gin.Context) {
         id, err := strconv.Atoi(c.Param("id"))
         if err != nil { c.String(http.StatusBadRequest, "ID invalide"); return }
@@ -433,7 +428,6 @@ grp := router.Group("/supervisor", authRequired, supervisororadminRequired)
         c.Redirect(http.StatusSeeOther, "/supervisor")
     })
 
-    // Nouveau: POST /supervisor/ticket/:id/priority
     grp.POST("/ticket/:id/priority", func(c *gin.Context) {
         id, err := strconv.Atoi(c.Param("id"))
         if err != nil { c.String(http.StatusBadRequest, "ID invalide"); return }
@@ -460,9 +454,6 @@ grp := router.Group("/supervisor", authRequired, supervisororadminRequired)
         c.Redirect(http.StatusSeeOther, "/supervisor")
     })
 }
-
-
-
 
 router.GET("/logout", func(c *gin.Context) {
 	session := sessions.Default(c)
