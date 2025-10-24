@@ -1,3 +1,5 @@
+![alt text](https://i.imgur.com/f3Q2gzO.jpeg)
+
 # 🎟️ Go Ticket Manager
 
 A simple ticket management system built with **Go**, **Gin**, and **GORM**.  
